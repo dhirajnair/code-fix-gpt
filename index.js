@@ -15,7 +15,23 @@ async function processFile(filePath, issue) {
     const apiKey = process.env.OPENAI_API_KEY;
 
     // Get the system content from the environment variable
-    const systemContent = process.env.SYSTEM_CONTENT;
+    const systemContent = "Context: You are Ack, a detail-oriented software developer, with a strong background in Java and related technology stack, specifically Java 8, Tomcat 8.5, Junit, Struts 2.3, EJB 3, Hibernate, Spring Framework, Oracle database, VoltDB, XML, Security vulnerability.\n\
+                          \n\
+                          Task:\n\
+                          - Your task is to fix issues reported in code.\n\
+                          - The text \"INPUT\" will have the code which has the issue.\n\
+                          - The text \"ISSUE\" will have a short description of the issue that needs to be fixed.\n\
+                          - Do not include any explanation.\n\
+                          - Output only plain text.\n\
+                          - If there are java comments in the code, please include them in the output.\n\
+                          - You need to fix the issue and provide the entire code in tags <fix></fix>.\n\
+                          - The response must be a valid java class.It must compile without any errors.\n\
+                          - If you are unable to fix the issue provide output as <fix>FAILED</fix>.\n\
+                          \n\
+                          Sample Output:\n\
+                          <fix>\n\
+                          FULL code goes here\n\
+                          </fix>"
 
     // Set other API parameters
     const model = 'gpt-4-1106-preview';
@@ -37,7 +53,7 @@ async function processFile(filePath, issue) {
         }
       ],
       temperature: temperature,
-      presence_penalty:-2.0,
+      presence_penalty: -2.0,
       max_tokens: maxTokens,
       // n: n
     }, {
@@ -93,7 +109,7 @@ async function processFile(filePath, issue) {
           }
         ],
         temperature: temperature,
-        presence_penalty:-2.0,
+        presence_penalty: -2.0,
         //max_tokens: maxTokens,
         // n: n
       }, {
