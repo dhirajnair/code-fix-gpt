@@ -24,9 +24,9 @@ async function main() {
       // Assuming the first row contains headers: FILEPATH, ISSUE
       for (let i = 1; i < rows.length; i++) {
         const [filePath, issue] = rows[i];
-        console.log(`[Fix Process] Started for file: ${filePath}`);
+        console.log(`[Fix Process] Started for file: ${path.basename(filePath)}`);
         await fixIssue(filePath, issue);
-        console.log(`[Fix Process] Completed for file: ${filePath}`);
+        console.log(`[Fix Process] Completed for file: ${path.basename(filePath)}`);
 
         // Check if _fix file exists and content is different
         const fixedFilePath = path.join(
@@ -34,15 +34,15 @@ async function main() {
           `${path.basename(filePath, path.extname(filePath))}_fix${path.extname(filePath)}`
         );
         if (await fileExistsAndDifferent(filePath, fixedFilePath)) {
-          console.log(`[QC Process] Proceeding with QC for file: ${fixedFilePath}`);
+          console.log(`[QC Process] Started for file: ${path.basename(fixedFilePath)}`);
           let result = await qcIssue(fixedFilePath, issue); // Pass fixedFilePath to qcIssue
           if (result) {
-            console.log(`[QC Process] Completed for file: ${fixedFilePath}`);
+            console.log(`[QC Process] Completed for file: ${path.basename(fixedFilePath)}`);
           } else {
-            console.error(`[QC Process] Failed for file: ${fixedFilePath}`);
+            console.error(`[QC Process] Failed for file: ${path.basename(fixedFilePath)}`);
           }
         } else {
-          console.error(`[QC Skipped] No _fix file found or content is the same, skipping QC for: ${filePath}`);
+          console.error(`[QC Skipped] No _fix file found or content is the same, skipping QC for: ${path.basename(filePath)}`);
         }
       }
     } catch (error) {
@@ -52,9 +52,9 @@ async function main() {
     // -filepath and -issue mode: Process a single file
     const filePath = args['-filepath'];
     const issue = args['-issue'];
-    console.log(`[Fix Process] Started for file: ${filePath}`);
+    console.log(`[Fix Process] Started for file: ${path.basename(filePath)}`);
     await fixIssue(filePath, issue);
-    console.log(`[Fix Process] Completed for file: ${filePath}`);
+    console.log(`[Fix Process] Completed for file: ${path.basename(filePath)}`);
 
     // Check if _fix file exists and content is different
     const fixedFilePath = path.join(
@@ -62,15 +62,15 @@ async function main() {
       `${path.basename(filePath, path.extname(filePath))}_fix${path.extname(filePath)}`
     );
     if (await fileExistsAndDifferent(filePath, fixedFilePath)) {
-      console.log(`[QC Process] Proceeding with QC for file: ${fixedFilePath}`);
+      console.log(`[QC Process] Started for file: ${path.basename(fixedFilePath)}`);
       let result = await qcIssue(fixedFilePath, issue); // Pass fixedFilePath to qcIssue
       if (result) {
-        console.log(`[QC Process] Completed for file: ${fixedFilePath}`);
+        console.log(`[QC Process] Completed for file: ${path.basename(fixedFilePath)}`);
       } else {
-        console.error(`[QC Process] Failed for file: ${fixedFilePath}`);
+        console.error(`[QC Process] Failed for file: ${path.basename(fixedFilePath)}`);
       }
     } else {
-      console.error(`[QC Skipped] No _fix file found or content is the same, skipping QC for: ${filePath}`);
+      console.error(`[QC Skipped] No _fix file found or content is the same, skipping QC for: ${path.basename(filePath)}`);
     }
   } else {
     console.error('[Invalid Arguments] Use either -data for Excel input or -filepath and -issue for single file processing.');
