@@ -2,15 +2,19 @@ const fs = require('fs');
 const axios = require('axios');
 const dotenv = require('dotenv');
 const path = require('path');
+const { CustomLogger } = require('./utils'); 
 
 // Load environment variables from .env file
 dotenv.config();
 
 const verbose = process.env.VERBOSE || false;
 
+// Initialize the custom logger with the path to cfg.log
+const customLogger = new CustomLogger(__dirname + '/cfg.log');
+
 async function fixIssue(filePath, issue) {
     try {
-        //console.log('verbose:', verbose);
+        //customLogger.log('verbose:', verbose);
         // Get the OpenAI API key from the environment variable
         const apiKey = process.env.OPENAI_API_KEY;
         var fileContents = await fs.promises.readFile(filePath, 'utf-8');
@@ -120,22 +124,22 @@ async function fixIssue(filePath, issue) {
 
         assistantReply = response.data.choices[0].message.content;
 
-        console.log("Fix Assistant Reply:", assistantReply);
+        customLogger.log("Fix Assistant Reply:", assistantReply);
 
         await applyPatchesAndWriteFile(filePath, assistantReply);
 
     } catch (error) {
-        console.error('Error:', error.message);
+        customLogger.error('Error:', error.message);
     }
 }
 
 async function applyPatchesAndWriteFile(originalFilePath, gptResponse) {
     try {
-        console.log('Entering applyPatchesAndWriteFile function');
+        customLogger.log('Entering applyPatchesAndWriteFile function');
         let fileContents = await fs.promises.readFile(originalFilePath, 'utf-8');
         //Before processing the file contents, normalize line endings to ensure consistency. 
         fileContents = fileContents.replace(/\r\n/g, '\n');
-        //console.log('File contents loaded');
+        //customLogger.log('File contents loaded');
         //const regex = /<issue>([\s\S]*?)<\/issue>\s*<fix>([\s\S]*?)<\/fix>/g;
         const regex = /<issue>((?:\\.|[^\\])*?)<\/issue>\s*<fix>((?:\\.|[^\\])*?)<\/fix>/g;
         let match;
@@ -145,7 +149,7 @@ async function applyPatchesAndWriteFile(originalFilePath, gptResponse) {
 
             //handling for new methods
             if (issue === 'NA') {
-               // console.log('Handling new method');
+               // customLogger.log('Handling new method');
                 // Find the last closing bracket }
                 const lastClosingBracketIndex = fileContents.lastIndexOf('}');
                 if (lastClosingBracketIndex !== -1) {
@@ -154,10 +158,10 @@ async function applyPatchesAndWriteFile(originalFilePath, gptResponse) {
                         fix + '\n' +
                         fileContents.substring(lastClosingBracketIndex);
                 } else {
-                    console.log("No closing bracket found in the file.");
+                    customLogger.log("No closing bracket found in the file.");
                 }
             } else {
-                //console.log('Handling existing code');
+                //customLogger.log('Handling existing code');
                 // Create a regex pattern that ignores whitespace variations in the issue string
                 const issueRegexPattern = issue.split('').map(char => {
                     if (/\s/.test(char)) {
@@ -169,8 +173,8 @@ async function applyPatchesAndWriteFile(originalFilePath, gptResponse) {
 
                 const issueRegex = new RegExp(issueRegexPattern, 'gs'); // 'g' for global, 's' for dotAll (matches newline with '.')
 
-                //console.log("Regex pattern:", issueRegex);
-                //console.log("Attempting to match:", issue);
+                //customLogger.log("Regex pattern:", issueRegex);
+                //customLogger.log("Attempting to match:", issue);
                 fileContents = fileContents.replace(issueRegex, fix);
             }
         }
@@ -181,12 +185,12 @@ async function applyPatchesAndWriteFile(originalFilePath, gptResponse) {
         );
 
         if (verbose) {
-            //console.log('Before writing file:', fileContents);
+            //customLogger.log('Before writing file:', fileContents);
         }
         await fs.promises.writeFile(outputFilePath, fileContents, 'utf-8');
-       // console.log('Updates applied successfully to file:',outputFilePath);
+       // customLogger.log('Updates applied successfully to file:',outputFilePath);
     } catch (error) {
-        console.error('Error applying fix for file:', originalFilePath, 'error:', error);
+        customLogger.error('Error applying fix for file:', originalFilePath, 'error:', error);
     }
 }
 

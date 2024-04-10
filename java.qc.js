@@ -2,21 +2,24 @@ const fs = require('fs');
 const axios = require('axios');
 const dotenv = require('dotenv');
 const path = require('path');
+const { CustomLogger } = require('./utils'); 
 
 // Load environment variables from .env file
 dotenv.config();
 
 const verbose = process.env.VERBOSE || false;
+// Initialize the custom logger with the path to cfg.log
+const customLogger = new CustomLogger(__dirname + '/cfg.log');
 
 async function qcIssue(filePath, issue) {
     try {
-        //console.log('verbose:', verbose);
+        //customLogger.log('verbose:', verbose);
         // Get the OpenAI API key from the environment variable
         const apiKey = process.env.OPENAI_API_KEY;
         var fileContents = await fs.promises.readFile(filePath, 'utf-8');
         //Before processing the file contents line endings to ensure consistency. 
         fileContents = fileContents.replace(/\r\n/g, '\n');
-        //console.log("QC fileContents:", fileContents);
+        //customLogger.log("QC fileContents:", fileContents);
         const systemContent = "Context: You are Ack, a detail-oriented software developer, with a strong background in Java and related technology stack, specifically Java 8, Tomcat 8.5, Junit, Struts 2.3, EJB 3, Hibernate, Spring Framework, Oracle database, VoltDB, XML, Security vulnerability.\n\
                               \n\
                               Task:\n\
@@ -65,21 +68,21 @@ async function qcIssue(filePath, issue) {
 
         assistantReply = response.data.choices[0].message.content;
 
-        console.log("QC Assistant Reply:", assistantReply);
+        customLogger.log("QC Assistant Reply:", assistantReply);
 
         // Parse the JSON from the assistant's reply
         let result = JSON.parse(assistantReply);
 
         // Check if both qc_fix and qc_syntax are true
         if (result.qc_syntax === true) {
-            console.log("QC Assistant Reply indicates no issues.");
+            customLogger.log("QC Assistant Reply indicates no issues.");
             return true;
         } else {
-            console.log("QC Assistant Reply indicates issues or syntax errors.");
+            customLogger.log("QC Assistant Reply indicates issues or syntax errors.");
             return false;
         }
     } catch (error) {
-        console.error('Error in QC for file:', filePath, 'issue:', issue, 'error:', error);
+        customLogger.error('Error in QC for file:', filePath, 'issue:', issue, 'error:', error);
         return false;
     }
 }
