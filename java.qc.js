@@ -11,7 +11,7 @@ const verbose = process.env.VERBOSE || false;
 // Initialize the custom logger with the path to cfg.log
 const customLogger = new CustomLogger(__dirname + '/cfg.log');
 
-async function qcIssue(filePath, issue) {
+async function qcJavaIssue(filePath, issue) {
     try {
         //customLogger.log('verbose:', verbose);
         // Get the OpenAI API key from the environment variable
@@ -30,7 +30,7 @@ async function qcIssue(filePath, issue) {
                               - Respond with a JSON with two keys qc_fix and qc_syntax.\n\
                               - If the issue exists then qc_fix will be false else it will be true.If qc_fix is false you MUST provide the reason for the same in qc_fix_reason.\n\
                               - if there is a syntax issue in code then qc_syntax will be false else it will be true.If qc_syntax is false you MUST provide the reason for the same in qc_syntax_reason.\n\
-                              - The output MUST always contain the keys qc_fix and qc_syntax.\n\
+                              - The output MUST always contain the qc_fix and qc_syntax.\n\
                               -Sample JSON below:\n\
                               {\"qc_fix\":false,\"qc_syntax\":false}\n\
                                 "
@@ -41,7 +41,7 @@ async function qcIssue(filePath, issue) {
             },
             {
                 role: 'user',
-                content: `INPUT: ${fileContents}\nISSUE: ${issue}`
+                content: `INPUT: ${fileContents}\nISSUE: ${issue}. Is this still an issue?`
             }
         ];
 
@@ -88,4 +88,4 @@ async function qcIssue(filePath, issue) {
     }
 }
 // Export fixIssue
-module.exports = { qcIssue };
+module.exports = { qcJavaIssue };

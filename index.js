@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const { fixIssue } = require('./java.fixer');
-const { qcIssue } = require('./java.qc');
+const { fixJavaIssue } = require('./java.fixer');
+const { qcJavaIssue } = require('./java.qc');
 const readXlsxFile = require('read-excel-file/node');
 
 // Function to parse command-line arguments
@@ -25,13 +25,13 @@ async function main() {
       for (let i = 1; i < rows.length; i++) {
         const [filePath, issue, include] = rows[i];
         if (include.toString().toLowerCase() !== 'true') {
-          console.log(`[Skip Process] Skipping file due to exclude flag: ${path.basename(filePath)}`);
+          console.log(`[Fix Process] Skipping file due to exclude flag: ${path.basename(filePath)}`);
           continue; // Skip this iteration if exclude is not 'false'
         }
         try {
           console.log('--------------------------------------------------');
           console.log(`[Fix Process] Started for file: ${path.basename(filePath)}`);
-          await fixIssue(filePath, issue);
+          await fixJavaIssue(filePath, issue);
           console.log(`[Fix Process] Completed for file: ${path.basename(filePath)}`);
           console.log('--------------------------------------------------');
           // Check if _fix file exists and content is different
@@ -40,16 +40,16 @@ async function main() {
             `${path.basename(filePath, path.extname(filePath))}_fix${path.extname(filePath)}`
           );
           if (await fileExistsAndDifferent(filePath, fixedFilePath)) {
-            console.log(`[QC Process] Started for file: ${path.basename(fixedFilePath)}`);
-            let result = await qcIssue(fixedFilePath, issue); // Pass fixedFilePath to qcIssue
+            console.log(`<QC Process> Started for file: ${path.basename(fixedFilePath)}`);
+            let result = await qcJavaIssue(fixedFilePath, issue); // Pass fixedFilePath to qcIssue
             if (result) {
-              console.log(`[QC Process] Completed for file: ${path.basename(fixedFilePath)}`);
+              console.log(`<QC Process> Completed for file: ${path.basename(fixedFilePath)}`);
             } else {
-              console.error(`[QC Process] Failed for file: ${path.basename(fixedFilePath)}`);
+              console.error(`<QC Process> Failed for file: ${path.basename(fixedFilePath)}`);
             }
             console.log('--------------------------------------------------');
           } else {
-            console.error(`[QC Skipped] No _fix file found or content is the same, skipping QC for: ${path.basename(filePath)}`);
+            console.error(`<QC Process> No _fix file found or content is the same, skipping QC for: ${path.basename(filePath)}`);
             console.log('--------------------------------------------------');
           }
         } catch (error) {
@@ -68,7 +68,7 @@ async function main() {
     try {
       console.log('--------------------------------------------------');
       console.log(`[Fix Process] Started for file: ${path.basename(filePath)}`);
-      await fixIssue(filePath, issue);
+      await fixJavaIssue(filePath, issue);
       console.log(`[Fix Process] Completed for file: ${path.basename(filePath)}`);
       console.log('--------------------------------------------------');
       // Check if _fix file exists and content is different
@@ -77,16 +77,16 @@ async function main() {
         `${path.basename(filePath, path.extname(filePath))}_fix${path.extname(filePath)}`
       );
       if (await fileExistsAndDifferent(filePath, fixedFilePath)) {
-        console.log(`[QC Process] Started for file: ${path.basename(fixedFilePath)}`);
-        let result = await qcIssue(fixedFilePath, issue); // Pass fixedFilePath to qcIssue
+        console.log(`<QC Process> Started for file: ${path.basename(fixedFilePath)}`);
+        let result = await qcJavaIssue(fixedFilePath, issue); // Pass fixedFilePath to qcIssue
         if (result) {
-          console.log(`[QC Process] Completed for file: ${path.basename(fixedFilePath)}`);
+          console.log(`<QC Process> Completed for file: ${path.basename(fixedFilePath)}`);
         } else {
-          console.error(`[QC Process] Failed for file: ${path.basename(fixedFilePath)}`);
+          console.error(`<QC Process> Failed for file: ${path.basename(fixedFilePath)}`);
         }
         console.log('--------------------------------------------------');
       } else {
-        console.error(`[QC Skipped] No _fix file found or content is the same, skipping QC for: ${path.basename(filePath)}`);
+        console.error(`<QC Process>No _fix file found or content is the same, skipping QC for: ${path.basename(filePath)}`);
         console.log('--------------------------------------------------');
       }
     } catch (error) {

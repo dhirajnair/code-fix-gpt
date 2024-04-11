@@ -6,14 +6,25 @@ class CustomLogger {
         this.logFile = logFile;
     }
 
+    // Helper method to format the current timestamp
+    formatTimestamp() {
+        return new Date().toISOString();
+    }
+
     log(...args) {
-        fs.appendFileSync(this.logFile, args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ') + '\n');
-        //console.log(...args); // Optionally print to stdout
+        const timestamp = this.formatTimestamp();
+        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ');
+        fs.appendFileSync(this.logFile, `${timestamp} ${message}\n`);
+        // Optionally print to stdout
+        // console.log(`${timestamp} ${message}`);
     }
 
     error(...args) {
-        fs.appendFileSync(this.logFile, args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ') + '\n');
-        //console.error(...args); // Optionally print to stderr
+        const timestamp = this.formatTimestamp();
+        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ');
+        fs.appendFileSync(this.logFile, `${timestamp} ${message}\n`);
+        // Optionally print to stderr
+        // console.error(`${timestamp} ${message}`);
     }
 }
 
