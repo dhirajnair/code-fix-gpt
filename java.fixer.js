@@ -129,7 +129,8 @@ async function fixIssue(filePath, issue) {
         await applyPatchesAndWriteFile(filePath, assistantReply);
 
     } catch (error) {
-        customLogger.error('Error:', error.message);
+        customLogger.error('Error in Java fixer for file:', filePath, 'issue:', issue, 'error:', error);
+        throw error;
     }
 }
 

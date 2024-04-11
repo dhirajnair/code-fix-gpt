@@ -28,8 +28,9 @@ async function qcIssue(filePath, issue) {
                               - The text \"ISSUE\" will have a short description of the issue that needs to be checked.\n\
                               - Do not include any explanation in the response.\n\
                               - Respond with a JSON with two keys qc_fix and qc_syntax.\n\
-                              - If the issue exists then qc_fix will be false else it will be true.If qc_fix is false provide the reason for the same in qc_fix_reason.\n\
-                              - if there is a syntax issue in code then qc_syntax will be false else it will be true.If qc_syntax is false provide the reason for the same in qc_syntax_reason.\n\
+                              - If the issue exists then qc_fix will be false else it will be true.If qc_fix is false you MUST provide the reason for the same in qc_fix_reason.\n\
+                              - if there is a syntax issue in code then qc_syntax will be false else it will be true.If qc_syntax is false you MUST provide the reason for the same in qc_syntax_reason.\n\
+                              - The output MUST contain only the keys qc_fix and qc_syntax.\n\
                               -Sample JSON below:\n\
                               {\"qc_fix\":false,\"qc_syntax\":false}\n\
                                 "
