@@ -2,7 +2,7 @@ const fs = require('fs');
 const axios = require('axios');
 const dotenv = require('dotenv');
 const path = require('path');
-const { CustomLogger } = require('./utils'); 
+const { CustomLogger } = require('./utils');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -28,26 +28,31 @@ async function fixJavaIssue(filePath, issue) {
                               - The text \"INPUT\" will have the Java code which has the issue.\n\
                               - The text \"ISSUE\" will have a short description of the issue that needs to be fixed.\n\
                               - Do not include any explanation in the response.\n\
+                              - Follow best practices of software development and pay attention to code syntax, as the code is in Java.\n\
                               - Write a patch for the issue, based on the provided context.\n\
-                              - Return the patch in the format below.Between <issue></issue> tags, add the complete original code snippet from the program.Make sure to include comments, if any.\n\
-                              - Between <fix></fix>tags,add the fixed version of the original code.\n\
-                              - Ensure to pay attention to code syntax, as the code is in Java.\n\
-                                # update 1\n\
+                              - Return the patch in the format below as numbered updates.Refer \"Sample\".\n\
+                              - Between <issue></issue> tags, add the original code snippet from the program.Make sure to include comments, if any. The text between <issue></issue> tags must match exactly with the original code.\n\
+                              - Between <fix></fix>tags,add the \"fixed version\" of the original code added between <issue></issue> tags.Be precise when providing a fix between <fix></fix> tags.\n\
+                              - Provide multiple numbered updates with size of text between <issue> and <fix> tags of maximum 10 lines each, over one large numbered update.\n\
+                              - Sample:\n\
+                                ### update 1\n\
                                 <issue>(original code here)</issue>\n\
                                 <fix>(fixed code here)</fix>\n\
-                                # update 2\n\
+                                ### update 2\n\
                                 <issue>(original code here)</issue>\n\
                                 <fix>(fixed code here)</fix>\n\
-                                # update 3\n\
+                                ### update 3\n\
                                 <issue>(original code here)</issue>\n\
                                 <fix>(fixed code here)</fix>\n\
-                                # update 4\n\
+                                ### update 4 (If new method is added)\n\
                                 <issue>NA</issue>\n\
                                 <fix>(new method here)</fix>\n\
-                                - ENSURE that the text between <issue> and <fix> tags is different from each other.\n\
-                                - ALWAYS provide multiple small updates with size of 1-10 lines each, over one large update of more than 10 lines.\n\
-                                "
-
+                              - If unable to provide a precise fix,add the word COMPLEX between <issue></issue> tags and provide the reason between <fix></fix> tags.\n\
+                              - Each numbered update must have a <issue> and <fix> tags.\n\
+                              - There is no limit on the number of updates you can provide.\n\
+                              "
+// - The text between <issue></issue> will be searched using regex and the text between <fix></fix> will be applied to the original code, if a match is found.\n\
+// - So it is important to avoid using generic placeholders in issue and fix tags, as this will cause the regex match to fail.\n\
         let messages = [
             {
                 role: 'system',
@@ -70,6 +75,7 @@ async function fixJavaIssue(filePath, issue) {
             messages: messages,
             temperature: temperature,
             max_tokens: maxTokens,
+            logit_bias: {1131:-100,2564:-100,48627:-100,316:-100,3847:-100,369:-100,5395:-100,85:-100,488:-100},//blocking tokens such ... , brevity. Pushing model to respond with a complete fix rather than partial fix.
             seed: seed
         }, {
             headers: {
@@ -105,9 +111,14 @@ async function applyPatchesAndWriteFile(originalFilePath, gptResponse) {
             let issue = match[1].trim();
             const fix = match[2].trim();
 
-            //handling for new methods
+            //handling for complex methods
+            if (issue === 'COMPLEX') {
+                customLogger.log('Issue is complex');
+                return;
+            }
+            
             if (issue === 'NA') {
-               // customLogger.log('Handling new method');
+                customLogger.log('Handling new method');
                 // Find the last closing bracket }
                 const lastClosingBracketIndex = fileContents.lastIndexOf('}');
                 if (lastClosingBracketIndex !== -1) {
@@ -119,7 +130,7 @@ async function applyPatchesAndWriteFile(originalFilePath, gptResponse) {
                     customLogger.log("No closing bracket found in the file.");
                 }
             } else {
-                //customLogger.log('Handling existing code');
+                customLogger.log('Handling existing code');
                 // Create a regex pattern that ignores whitespace variations in the issue string
                 const issueRegexPattern = issue.split('').map(char => {
                     if (/\s/.test(char)) {
@@ -146,7 +157,7 @@ async function applyPatchesAndWriteFile(originalFilePath, gptResponse) {
             //customLogger.log('Before writing file:', fileContents);
         }
         await fs.promises.writeFile(outputFilePath, fileContents, 'utf-8');
-       // customLogger.log('Updates applied successfully to file:',outputFilePath);
+        // customLogger.log('Updates applied successfully to file:',outputFilePath);
     } catch (error) {
         customLogger.error('Error applying fix for file:', originalFilePath, 'error:', error);
     }

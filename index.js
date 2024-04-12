@@ -49,7 +49,7 @@ async function main() {
             }
             console.log('--------------------------------------------------');
           } else {
-            console.error(`<QC Process> No _fix file found or content is the same, skipping QC for: ${path.basename(filePath)}`);
+            console.error(`<QC Process>No _fix file found. Skipping QC for: ${path.basename(filePath)}`);
             console.log('--------------------------------------------------');
           }
         } catch (error) {
@@ -86,7 +86,7 @@ async function main() {
         }
         console.log('--------------------------------------------------');
       } else {
-        console.error(`<QC Process>No _fix file found or content is the same, skipping QC for: ${path.basename(filePath)}`);
+        console.error(`<QC Process>No _fix file found. Skipping QC for: ${path.basename(filePath)}`);
         console.log('--------------------------------------------------');
       }
     } catch (error) {
@@ -108,7 +108,7 @@ async function fileExistsAndDifferent(originalFilePath, fixedFilePath) {
 
     return originalContent !== fixedContent;
   } catch (error) {
-    console.error(`[Error] Checking file existence/difference: ${error}`);
+    //console.error(`[Error] Checking file existence/difference: ${error}`);
     return false; // File doesn't exist or other error
   }
 }
